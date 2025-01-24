@@ -24,4 +24,5 @@ urlpatterns = [
     path('relics/', include('relics.urls')),
     path('lightcones/', include('lightcones.urls')),
     path('stats/', include('stats.urls')),
+    path('abilities/', include('abilities.urls')),
 ]

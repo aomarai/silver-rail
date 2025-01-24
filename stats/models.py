@@ -49,7 +49,7 @@ class Stat(Model):
 
     stat_category = models.CharField(max_length=24, choices=STAT_CATEGORIES)
     stat_type = models.CharField(max_length=24, choices=STAT_TYPES)
-    value = models.FloatField()
+    value = models.FloatField(null=True, blank=True)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()

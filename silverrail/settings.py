@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'teams',
     'relics',
     'lightcones',
+    'stats',
+    'abilities'
 ]
 
 MIDDLEWARE = [
