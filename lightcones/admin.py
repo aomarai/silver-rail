@@ -1,3 +1,4 @@
 from django.contrib import admin
+from lightcones.models import Lightcone
 
-# Register your models here.
+admin.site.register(Lightcone)
