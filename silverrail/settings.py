@@ -141,10 +141,10 @@ REST_FRAMEWORK = {
         "anon": "100/day",
         "user": "1500/day",
     },
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
-    ]
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
 }
 
 SIMPLE_JWT = {
