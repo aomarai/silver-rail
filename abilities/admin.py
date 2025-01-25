@@ -5,4 +5,4 @@ from abilities.models import Ability
 class AbilityAdmin(admin.ModelAdmin):
     list_display = ('name', 'character', 'type', 'energy_cost', 'skill_point_cost')
     search_fields = ('name', 'character__name')
-    list_filter = ('type')
+    list_filter = ('type',)

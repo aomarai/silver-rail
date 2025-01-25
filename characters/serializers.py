@@ -1,10 +1,6 @@
 from rest_framework import serializers
-from characters.models import Character, Ability
-
-class AbilitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ability
-        fields = ['name', 'type', 'description']
+from characters.models import Character
+from abilities.serializers import AbilitySerializer
 
 class CharacterSerializer(serializers.ModelSerializer):
     abilities = AbilitySerializer(many=True, read_only=True)

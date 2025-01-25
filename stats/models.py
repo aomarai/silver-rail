@@ -49,7 +49,7 @@ class Stat(Model):
 
     stat_category = models.CharField(max_length=24, choices=STAT_CATEGORIES)
     stat_type = models.CharField(max_length=24, choices=STAT_TYPES)
-    value = models.FloatField(null=True, blank=True)
+    value = models.FloatField(default=0)  # Default value is 0
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -57,3 +57,6 @@ class Stat(Model):
 
     def __str__(self):
         return f"{self.object} - {self.get_stat_type_display()}"
+
+    class Meta:
+        unique_together = ('content_type', 'object_id', 'stat_type')
