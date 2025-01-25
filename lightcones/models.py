@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Model
+from characters.models import Character
 
 
 class Lightcone(Model):
@@ -8,7 +9,7 @@ class Lightcone(Model):
     name = models.CharField(max_length=128)
     rarity = models.PositiveSmallIntegerField(choices=RARITIES)
     ability = models.CharField(max_length=2048)
-    path = models.CharField(max_length=24)
+    path = models.CharField(max_length=24, choices=Character.PATHS)
 
     def __str__(self):
         return self.name
