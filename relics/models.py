@@ -6,7 +6,7 @@ class Relic(Model):
         ('head', 'Head'),
         ('hands', 'Hands'),
         ('chest', 'Chest'),
-        ('feed', 'Feet'),
+        ('feet', 'Shoes'),
     ]
 
     name = models.CharField(max_length=128)

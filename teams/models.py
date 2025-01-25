@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Model
+from rest_framework.exceptions import ValidationError
 
 from characters.models import Character
 
@@ -9,3 +10,7 @@ class Team(Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.members.count() > 4 or self.members.count <= 0:
+            raise ValidationError('A team must have one to four members.')

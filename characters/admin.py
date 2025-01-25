@@ -17,6 +17,4 @@ class CharacterAdmin(admin.ModelAdmin):
   ordering = ('name',)
 
   def get_inlines(self, request, obj=None):
-    if obj is None:  # During character creation
-      return [AbilityInline]  # Only allow abilities inline
-    return [AbilityInline, StatInline]
+    return [AbilityInline] if obj is None else [AbilityInline, StatInline]
