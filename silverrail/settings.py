@@ -140,10 +140,13 @@ REST_FRAMEWORK = {
         "registration": "3/day",
         "anon": "100/day",
         "user": "1500/day",
+        "burst": "60/min",
+        "sustained": "1000/day"
     },
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle"
     ],
 }
 

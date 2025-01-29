@@ -1,14 +1,35 @@
 from django.urls import reverse
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework.settings import api_settings
+
+
 from users.models import SilverRailUser
 
+TEST_REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "registration": "40/second",
+        "anon": "100/day",
+        "user": "1500/day",
+        "burst": "60/min",
+        "sustained": "1000/day"
+    },
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle"
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+}
 
-class UserRegistrationTests(APITestCase):
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
+class UserRegistrationTests(APITestCase): # TODO: Get the rate limiting on the user registration tests working
     """
     Test suite for user registration functionality.
     """
-
     register_url = reverse("register")
 
     def test_valid_user_registration(self):
@@ -21,6 +42,7 @@ class UserRegistrationTests(APITestCase):
             "password": "testpassword",
             "email": "testuser@example.com",
         }
+        print(api_settings.DEFAULT_THROTTLE_RATES)
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(SilverRailUser.objects.count(), 1)
@@ -107,7 +129,9 @@ class UserRegistrationTests(APITestCase):
         """
         url = self.register_url
 
-        for i in range(20):
+        max_registrations = int(TEST_REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["registration"][:2])
+
+        for i in range(max_registrations):
             data = {
                 "username": f"testuser{i}",
                 "password": "testpassword",

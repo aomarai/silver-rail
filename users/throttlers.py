@@ -1,6 +1,5 @@
-from rest_framework.throttling import UserRateThrottle
+from rest_framework.throttling import AnonRateThrottle
 
 
-class RegistrationThrottle(UserRateThrottle):
-    rate = "3/day"
+class RegistrationThrottle(AnonRateThrottle):
     scope = "registration"
