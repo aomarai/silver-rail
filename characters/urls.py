@@ -7,16 +7,16 @@ urlpatterns = [
     path(
         "<int:character_id>/",
         views.CharacterRetrieveView.as_view(),
-        name="characters-detail",
+        name="character-detail",
     ),
     path(
         "<int:character_id>/edit/",
         views.CharacterUpdateView.as_view(),
-        name="characters-edit",
+        name="character-edit",
     ),
     path(
         "<int:character_id>/delete/",
         views.CharacterDeleteView.as_view(),
-        name="characters-delete",
+        name="character-delete",
     ),
 ]

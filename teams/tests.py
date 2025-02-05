@@ -9,6 +9,8 @@ from relics.models import Relic
 
 class TeamCharacterModelTests(APITestCase):
 
+    # TODO: Create admin user for tests to test admin only views
+
     def test_create_team_character(self):
         team = Team.objects.create(name="Team A")
         character = Character.objects.create(name="Character A", rarity=5)
@@ -27,14 +29,14 @@ class TeamCharacterModelTests(APITestCase):
 
     def test_character_deletion_cascades_to_team_characters(self):
         team, character, lightcone, team_character = self.test_create_team_character()
-        url = reverse("character-detail", args=[character.id])
+        url = reverse("character-delete", args=[character.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(TeamCharacter.objects.filter(id=team_character.id).exists())
 
     def test_lightcone_deletion_sets_null_in_team_characters(self):
         team, character, lightcone, team_character = self.test_create_team_character()
-        url = reverse("lightcone-detail", args=[lightcone.id])
+        url = reverse("lightcone-delete", args=[lightcone.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         team_character.refresh_from_db()
@@ -44,7 +46,7 @@ class TeamCharacterModelTests(APITestCase):
         team, character, lightcone, team_character = self.test_create_team_character()
         relic = Relic.objects.create(name="Relic A")
         team_character.relics.add(relic)
-        url = reverse("relic-detail", args=[relic.id])
+        url = reverse("relic-delete", args=[relic.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         team_character.refresh_from_db()
