@@ -6,10 +6,6 @@ from characters.models import Character
 from characters.serializers import CharacterSerializer
 
 
-def index(request):
-    return render(request, "characters/index.html", {})
-
-
 class CharacterRetrieveView(generics.RetrieveAPIView):
     queryset = Character.objects.all()
     permission_classes = [AllowAny]
@@ -31,4 +27,10 @@ class CharacterUpdateView(generics.UpdateAPIView):
 class CharacterDeleteView(generics.DestroyAPIView):
     queryset = Character.objects.all()
     permission_classes = [IsAdminUser]
+    serializer_class = CharacterSerializer
+
+
+class CharacterListView(generics.ListAPIView):
+    queryset = Character.objects.all()
+    permission_classes = [AllowAny]
     serializer_class = CharacterSerializer

@@ -2,7 +2,7 @@ from django.urls import path
 from characters import views
 
 urlpatterns = [
-    path("", views.index, name="characters-index"),
+    path("", views.CharacterListView.as_view(), name="characters"),
     path("create/", views.CharacterCreateView.as_view(), name="characters-create"),
     path(
         "<int:character_id>/",
@@ -11,12 +11,12 @@ urlpatterns = [
     ),
     path(
         "<int:character_id>/edit/",
-        views.CharacterRetrieveView.as_view(),
+        views.CharacterUpdateView.as_view(),
         name="characters-edit",
     ),
     path(
         "<int:character_id>/delete/",
-        views.CharacterRetrieveView.as_view(),
+        views.CharacterDeleteView.as_view(),
         name="characters-delete",
     ),
 ]
