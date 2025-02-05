@@ -5,5 +5,6 @@ class CharactersConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "characters"
 
-    def ready(self):
-        import characters.signals
+    # TODO: Implement stats (frontend might be better for this)
+    # def ready(self):
+    #     import characters.signals
