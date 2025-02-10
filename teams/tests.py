@@ -17,7 +17,7 @@ class TeamCharacterModelTests(APITestCase):
             password='TestAdmin1234##'
         )
         # FIXME: Getting 401 for all the admin requests
-        self.client.force_login(user=self.user)
+        self.client.force_authenticate(user=self.user)
 
     @staticmethod
     def create_team_character():
