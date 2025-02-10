@@ -12,9 +12,9 @@ class TeamCharacterModelTests(APITestCase):
 
     def setUp(self):
         self.user = SilverRailUser.objects.create_superuser(
-            username='testadmin',
-            email='testadmin@admin.com',
-            password='TestAdmin1234##'
+            username="testadmin",
+            email="testadmin@admin.com",
+            password="TestAdmin1234##",
         )
         # FIXME: Getting 401 for all the admin requests
         self.client.force_authenticate(user=self.user)
