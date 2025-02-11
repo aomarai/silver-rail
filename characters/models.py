@@ -34,16 +34,16 @@ class Character(Model):
     type = models.CharField(max_length=24, choices=TYPES)
     path = models.CharField(max_length=24, choices=PATHS)
     rarity = models.PositiveSmallIntegerField(choices=RARITIES)
-    lightcone = models.ForeignKey(
-        "lightcones.Lightcone",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="characters",
-    )
-    relics = models.ManyToManyField(
-        "relics.Relic", related_name="characters", blank=True
-    )
+    # lightcone = models.ForeignKey(
+    #     "lightcones.Lightcone",
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name="characters",
+    # )
+    # relics = models.ManyToManyField(
+    #     "relics.Relic", related_name="characters", blank=True
+    # )
 
     def __str__(self):
         return self.name
