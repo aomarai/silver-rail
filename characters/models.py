@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Model
+from rest_framework.exceptions import ValidationError
 
 
 class Character(Model):
@@ -44,37 +45,19 @@ class Character(Model):
         "relics.Relic", related_name="characters", blank=True
     )
 
-    def total_stats(self):
-        # Fetch related data in optimal queries
-        character = (
-            self.__class__.objects.select_related("lightcone")
-            .prefetch_related("stats", "lightcone__stats", "relics__stats")
-            .get(id=self.id)
-        )
-
-        combined_stats = {}
-
-        # Add character base stats
-        for stat in character.stats.filter(stat_category="base"):
-            combined_stats[stat.stat_type] = (
-                combined_stats.get(stat.stat_type, 0) + stat.value
-            )
-
-        # Add stats from lightcone
-        if character.lightcone:
-            for stat in character.lightcone.stats.all():
-                combined_stats[stat.stat_type] = (
-                    combined_stats.get(stat.stat_type, 0) + stat.value
-                )
-
-        # Add stats from relics
-        for relic in character.relics.all():
-            for stat in relic.stats.all():
-                combined_stats[stat.stat_type] = (
-                    combined_stats.get(stat.stat_type, 0) + stat.value
-                )
-
-        return combined_stats
-
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.rarity not in [4, 5]:
+            raise ValidationError("Rarity must be either 4 or 5 stars.")
+        if self.path not in dict(self.PATHS):
+            raise ValidationError("Invalid path.")
+        if self.type not in dict(self.TYPES):
+            raise ValidationError("Invalid type.")
+        if not self.name.strip():
+            raise ValidationError("Name cannot be empty.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)

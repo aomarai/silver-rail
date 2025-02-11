@@ -35,7 +35,7 @@ class UserSerializer(ModelSerializer):
         try:
             errors = {}
         except ValidationError as e:
-            errors['password'] = list(e.messages)
-        if errors.get('password'):
+            errors["password"] = list(e.messages)
+        if errors.get("password"):
             raise serializers.ValidationError(errors)
         return data

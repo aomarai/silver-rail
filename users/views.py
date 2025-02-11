@@ -1,6 +1,11 @@
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
-from rest_framework.throttling import AnonRateThrottle, ScopedRateThrottle, UserRateThrottle
+from rest_framework.response import Response
+from rest_framework.throttling import (
+    AnonRateThrottle,
+    ScopedRateThrottle,
+    UserRateThrottle,
+)
 
 from users.throttlers import RegistrationThrottle
 from users.serializers import UserSerializer
@@ -13,3 +18,8 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
     throttle_classes = [RegistrationThrottle]
     throttle_scope = "registration"
+
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return Response({"detail": "You are already registered."}, status=400)
+        return super().post(request, *args, **kwargs)
