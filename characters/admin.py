@@ -5,7 +5,7 @@ from abilities.models import Ability
 
 class AbilityInline(admin.TabularInline):
     model = Ability
-    extra = 1
+    extra = 0
     min_num = 0
 
 

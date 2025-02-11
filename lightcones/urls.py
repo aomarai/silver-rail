@@ -1,14 +1,9 @@
-from django.urls import path
-from lightcones import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-urlpatterns = [
-    path("", views.LightconeListView.as_view(), name="lightcones"),
-    path("create/", views.LightconeCreateView.as_view(), name="lightcone-create"),
-    path("<int:pk>", views.LightconeRetrieveView.as_view(), name="lightcone-detail"),
-    path("<int:pk>/edit", views.LightconeUpdateView.as_view(), name="lightcone-edit"),
-    path(
-        "<int:pk>/delete",
-        views.LightconeDestroyView.as_view(),
-        name="lightcone-delete",
-    ),
-]
+from lightcones.views import LightconeViewSet
+
+router = DefaultRouter()
+router.register(r"lightcone", LightconeViewSet)
+
+urlpatterns = [path("", include(router.urls))]

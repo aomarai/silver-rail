@@ -27,9 +27,7 @@ TEST_REST_FRAMEWORK = {
 
 
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
-class UserRegistrationTests(
-    APITestCase
-):  # TODO: Get the rate limiting on the user registration tests working
+class UserRegistrationTests(APITestCase):
     """
     Test suite for user registration functionality.
     """

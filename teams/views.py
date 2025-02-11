@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
@@ -7,57 +7,28 @@ from teams.models import Team, TeamCharacter
 from teams.serializers import TeamSerializer, TeamCharacterSerializer
 
 
-class TeamCreateView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+class TeamViewSet(viewsets.ModelViewSet):
+    queryset = Team.objects.all()
     serializer_class = TeamSerializer
 
-    def post(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return super().post(request, *args, **kwargs)
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            self.permission_classes = [IsAuthenticated]
         else:
-            return Response({"detail": "You are not authenticated."}, status=401)
+            self.permission_classes = [AllowAny]
+        return [permission() for permission in self.permission_classes]
 
 
-class TeamUpdateView(generics.UpdateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = TeamSerializer
-    queryset = Team.objects.all()
-
-
-class TeamDestroyView(generics.DestroyAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = TeamSerializer
-    queryset = Team.objects.all()
-
-
-class TeamRetrieveView(generics.RetrieveAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = TeamSerializer
-    queryset = Team.objects.all()
-
-
-class TeamListView(generics.ListAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = TeamSerializer
-    queryset = Team.objects.all()
-
-
-class TeamCharacterUpdateView(generics.UpdateAPIView):
-    # TODO: Lock a lot of these to the specific user
-    permission_classes = [IsAuthenticated]
-    serializer_class = TeamCharacterSerializer
+class TeamCharacterViewSet(viewsets.ModelViewSet):
     queryset = TeamCharacter.objects.all()
-
-
-class TeamCharacterDestroyView(generics.DestroyAPIView):
-    # TODO: Lock a lot of these to the specific user
-    permission_classes = [IsAuthenticated]
     serializer_class = TeamCharacterSerializer
-    queryset = TeamCharacter.objects.all()
 
+    def get_permissions(self):
+        if self.action in ["update", "partial_update", "destroy"]:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [AllowAny]
+        return [permission() for permission in self.permission_classes]
 
-class TeamCharacterRetrieveView(generics.RetrieveAPIView):
-    # TODO: Lock a lot of these to the specific user
-    permission_classes = [AllowAny]
-    serializer_class = TeamCharacterSerializer
-    queryset = TeamCharacter.objects.all()
+    def create(self, request, *args, **kwargs):
+        return Response({"detail": 'Method "POST" not allowed.'}, status=405)

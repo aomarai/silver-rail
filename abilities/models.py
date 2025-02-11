@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Model
+from rest_framework.exceptions import ValidationError
 
 
 class Ability(Model):
@@ -35,3 +36,14 @@ class Ability(Model):
 
     def __str__(self):
         return f"{self.character.name} - {self.name} ({self.get_type_display()})"
+
+    def clean(self):
+        super().clean()
+        if not self.name.strip():
+            raise ValidationError("Ability name cannot be empty.")
+        if self.type not in dict(self.ABILITY_TYPES):
+            raise ValidationError(f"Invalid ability type: {self.type}")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)

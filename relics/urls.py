@@ -1,10 +1,9 @@
-from django.urls import path
-from relics import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-urlpatterns = [
-    path("", views.RelicListView.as_view(), name="relics"),
-    path("create", views.RelicCreateView.as_view(), name="relic-create"),
-    path("<int:pk>", views.RelicRetrieveView.as_view(), name="relic-detail"),
-    path("<int:pk>/edit", views.RelicUpdateView.as_view(), name="relic-edit"),
-    path("<int:pk>/delete", views.RelicDeleteView.as_view(), name="relic-delete"),
-]
+from relics.views import RelicViewSet
+
+router = DefaultRouter()
+router.register(r"relic", RelicViewSet)
+
+urlpatterns = [path("", include(router.urls))]
