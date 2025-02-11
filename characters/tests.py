@@ -20,6 +20,22 @@ class CharacterModelTests(APITestCase):
     def test_character_creation_fails_with_invalid_data(self):
         with self.assertRaises(ValidationError):
             Character.objects.create(name="", type="unknown", path="invalid", rarity=-1)
+        with self.assertRaises(ValidationError):
+            Character.objects.create(
+                name="a dude", type="unknown", path="harmony", rarity=5
+            )
+        with self.assertRaises(ValidationError):
+            Character.objects.create(
+                name="another dude", type="fire", path="invalid", rarity=4
+            )
+        with self.assertRaises(ValidationError):
+            Character.objects.create(
+                name="woah a third dude", type="ice", path="nihility", rarity=0
+            )
+        with self.assertRaises(ValidationError):
+            Character.objects.create(
+                name="ab", type="imaginary", path="harmony", rarity=3
+            )
 
     def test_character_retrieval_succeeds(self):
         character = Character.objects.create(
@@ -63,8 +79,20 @@ class CharacterAPITests(APITestCase):
             password="TestAdmin1234##",
         )
 
+    def set_self_as_regular_user(self):
+        self.user = SilverRailUser.objects.create_user(
+            username="testregularuser",
+            email="testuser@userwow.com",
+            password="TotallyRealPassword1234##",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    @staticmethod
+    def get_character_http_data(name="New Hero", type="ice", path="harmony", rarity=4):
+        return {"name": name, "type": type, "path": path, "rarity": rarity}
+
     def test_create_character(self):
-        data = {"name": "New Hero", "type": "ice", "path": "harmony", "rarity": 4}
+        data = self.get_character_http_data()
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.character_list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -94,3 +122,28 @@ class CharacterAPITests(APITestCase):
         response = self.client.delete(self.character_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Character.objects.count(), 0)
+
+    def test_create_character_non_superuser(self):
+        self.set_self_as_regular_user()
+        data = self.get_character_http_data(type="fire", rarity=5)
+        response = self.client.post(self.character_list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Character.objects.count(), 1)
+
+    def test_retrieve_character_non_superuser(self):
+        self.set_self_as_regular_user
+        response = self.client.get(self.character_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], "Hero")
+
+    def test_update_character_non_superuser(self):
+        data = self.get_character_http_data(name="Updated Guy")
+        self.set_self_as_regular_user()
+        response = self.client.put(self.character_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_character_non_superuser(self):
+        self.set_self_as_regular_user()
+        response = self.client.delete(self.character_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Character.objects.count(), 1)

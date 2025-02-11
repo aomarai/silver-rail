@@ -7,12 +7,12 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = "__all__"
 
-        def create(self, validated_data):
-            members = validated_data.pop("members")
-            team = Team.objects.create(**validated_data)
-            for member in members:
-                TeamCharacter.objects.create(team=team, **member)
-            return team
+    def create(self, validated_data):
+        members = validated_data.pop("members")
+        team = Team.objects.create(**validated_data)
+        for member in members:
+            TeamCharacter.objects.create(team=team, **member)
+        return team
 
 
 class TeamCharacterSerializer(serializers.ModelSerializer):

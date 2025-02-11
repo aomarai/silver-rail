@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 
 from users.models import SilverRailUser
+from characters.tests import CharacterAPITests
 
 
 def create_lightcone(
@@ -29,6 +30,12 @@ class LightconeModelTests(TestCase):
     def test_lightcone_creation_fails_with_invalid_data(self):
         with self.assertRaises((ValidationError, IntegrityError)):
             Lightcone.objects.create(name="", path="unknown", rarity=1)
+        with self.assertRaises((ValidationError, IntegrityError)):
+            Lightcone.objects.create(name="a lightcone", path="destruction", rarity=1)
+        with self.assertRaises((ValidationError, IntegrityError)):
+            Lightcone.objects.create(name="a lightcone", path="unknown", rarity=4)
+        with self.assertRaises((ValidationError, IntegrityError)):
+            Lightcone.objects.create(name="", path="harmony", rarity=5)
 
     def test_lightcone_retrieval_succeeds(self):
         lightcone = create_lightcone()
@@ -57,12 +64,30 @@ class LightconeAPITests(APITestCase):
         self.lightcone_url = reverse(
             "lightcone-detail", kwargs={"pk": self.lightcone.pk}
         )
-        self.lightcone_create_url = reverse("lightcone-list")
+        self.lightcone_list_url = reverse("lightcone-list")
         self.user = SilverRailUser.objects.create_superuser(
             username="testadmin",
             email="testadmin@admin.com",
             password="TestAdmin1234##",
         )
+
+    def set_self_as_regular_user(self):
+        self.user = SilverRailUser.objects.create_user(
+            username="testregularuser",
+            email="testuser@userwow.com",
+            password="TotallyRealPassword1234##",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def get_lightcone_http_data(
+        self, name="New Lightcone", ability="ability desc.", path="harmony", rarity=4
+    ):
+        return {
+            "name": name,
+            "ability": ability,
+            "path": path,
+            "rarity": rarity,
+        }
 
     def test_create_lightcone(self):
         data = {
@@ -72,7 +97,7 @@ class LightconeAPITests(APITestCase):
             "ability": "blows you up hugely wow 2",
         }
         self.client.force_authenticate(user=self.user)
-        response = self.client.post(self.lightcone_create_url, data, format="json")
+        response = self.client.post(self.lightcone_list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Lightcone.objects.count(), 2)
         self.assertEqual(Lightcone.objects.get(name="Shining Star").path, "destruction")
@@ -100,3 +125,29 @@ class LightconeAPITests(APITestCase):
         response = self.client.delete(self.lightcone_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Lightcone.objects.count(), 0)
+
+    def test_create_lightcone_non_superuser(self):
+        self.set_self_as_regular_user()
+        data = self.get_lightcone_http_data(rarity=5)
+        response = self.client.post(self.lightcone_list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Lightcone.objects.count(), 1)
+
+    def test_retrieve_lightcone_non_superuser(self):
+        self.set_self_as_regular_user
+        response = self.client.get(self.lightcone_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], "Bright Star")
+
+    def test_update_lightcone_non_superuser(self):
+        data = self.get_lightcone_http_data(name="Updated Lightcone")
+        self.set_self_as_regular_user()
+        response = self.client.put(self.lightcone_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIsNotNone(Lightcone.objects.get(name="Bright Star"))
+
+    def test_delete_lightcone_non_superuser(self):
+        self.set_self_as_regular_user()
+        response = self.client.delete(self.lightcone_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Lightcone.objects.count(), 1)

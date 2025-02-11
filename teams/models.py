@@ -12,14 +12,12 @@ class Team(Model):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        super().clean()
-        if self.pk and (self.members.count() > 4 or self.members.count() <= 0):
-            raise ValidationError("A team must have 1 to 4 members.")
-
     def save(self, *args, **kwargs):
-        self.full_clean()
         super().save(*args, **kwargs)
+
+        if not self.pk and not 1 <= len(self.members.all()) <= 4:
+            raise ValidationError("A team must have between 1 and 4 members.")
+        self.full_clean()
 
 
 class TeamCharacter(Model):

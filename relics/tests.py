@@ -83,6 +83,28 @@ class RelicAPITests(APITestCase):
             password="TestAdmin1234##",
         )
 
+    def set_self_as_regular_user(self):
+        self.user = SilverRailUser.objects.create_user(
+            username="testregularuser",
+            email="testuser@userwow.com",
+            password="TotallyRealPassword1234##",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def get_relic_http_data(
+        self,
+        name="New Relic",
+        set_name="relic test set",
+        effect="relic effect here",
+        slot="head",
+    ):
+        return {
+            "name": name,
+            "set_name": set_name,
+            "effect": effect,
+            "slot": slot,
+        }
+
     def test_create_relic(self):
         data = {
             "name": "Mystic Gloves",
@@ -119,3 +141,29 @@ class RelicAPITests(APITestCase):
         response = self.client.delete(self.relic_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Relic.objects.count(), 0)
+
+    def test_create_relic_non_superuser(self):
+        self.set_self_as_regular_user()
+        data = self.get_relic_http_data(name="Should Not Exist")
+        response = self.client.post(self.relic_list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Relic.objects.count(), 1)
+
+    def test_retrieve_lightcone_non_superuser(self):
+        self.set_self_as_regular_user
+        response = self.client.get(self.relic_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], "Ancient Crown")
+
+    def test_update_lightcone_non_superuser(self):
+        data = self.get_relic_http_data(name="Updated Lightcone")
+        self.set_self_as_regular_user()
+        response = self.client.put(self.relic_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIsNotNone(Relic.objects.get(name="Ancient Crown"))
+
+    def test_delete_lightcone_non_superuser(self):
+        self.set_self_as_regular_user()
+        response = self.client.delete(self.relic_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Relic.objects.count(), 1)
