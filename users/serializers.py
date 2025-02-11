@@ -1,4 +1,3 @@
-import django.contrib.auth.password_validation as validators
 from django.core.exceptions import ValidationError
 
 from rest_framework.serializers import ModelSerializer
