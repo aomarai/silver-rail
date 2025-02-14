@@ -25,6 +25,7 @@ class Ability(Model):
         "characters.Character", on_delete=models.CASCADE, related_name="abilities"
     )
     name = models.CharField(max_length=128)
+    image_url = models.URLField(max_length=2048, blank=True, null=True)
     type = models.CharField(max_length=16, choices=ABILITY_TYPES)
     energy_cost = models.IntegerField(null=True, blank=True)  # For ultimates
     skill_point_cost = models.SmallIntegerField(null=True, blank=True)  # For skills

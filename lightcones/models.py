@@ -9,6 +9,7 @@ class Lightcone(Model):
     RARITIES = [(3, "3 Star"), (4, "4 Star"), (5, "5 Star")]
 
     name = models.CharField(max_length=128)
+    image_url = models.URLField(max_length=2048, blank=True, null=True)
     rarity = models.PositiveSmallIntegerField(choices=RARITIES)
     ability = models.CharField(max_length=2048)
     path = models.CharField(max_length=24, choices=Character.PATHS)

@@ -14,6 +14,7 @@ class Relic(Model):
     ]
 
     name = models.CharField(max_length=128)
+    image_url = models.URLField(max_length=2048, blank=True)
     set_name = models.CharField(max_length=128)
     effect = models.CharField(max_length=2048)
     slot = models.CharField(max_length=24, choices=SLOTS)

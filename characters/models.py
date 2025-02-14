@@ -31,6 +31,7 @@ class Character(Model):
     ]
 
     name = models.CharField(max_length=128)
+    image_url = models.URLField(max_length=2048, blank=True, null=True)
     type = models.CharField(max_length=24, choices=TYPES)
     path = models.CharField(max_length=24, choices=PATHS)
     rarity = models.PositiveSmallIntegerField(choices=RARITIES)
