@@ -1,6 +1,20 @@
+import os
+
 from django.db import models
 from django.db.models import Model
+from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
+
+
+def relic_image_path(instance, filename):
+    relic_set_name = slugify(instance.relic.set_name)
+    relic_slot = instance.relic.slot
+    extension = filename.split(".")[-1]
+    return os.path.join(
+        "relics",
+        relic_set_name,
+        f"{relic_slot}.{extension}",
+    )
 
 
 class Relic(Model):
@@ -14,9 +28,9 @@ class Relic(Model):
     ]
 
     name = models.CharField(max_length=128)
-    image_url = models.URLField(max_length=2048, blank=True)
+    image = models.ImageField(upload_to=relic_image_path, blank=True, null=True)
     set_name = models.CharField(max_length=128)
-    effect = models.CharField(max_length=2048)
+    effect = models.CharField(max_length=2048, blank=True)
     slot = models.CharField(max_length=24, choices=SLOTS)
 
     def __str__(self):

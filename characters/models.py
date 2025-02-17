@@ -1,6 +1,25 @@
+import os
 from django.db import models
 from django.db.models import Model
+from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
+
+
+def character_main_image_path(instance, filename):
+    """Upload path for main character image"""
+    character_name = slugify(instance.name)
+    character_path = slugify(instance.path)
+    extension = filename.split(".")[-1]
+    return os.path.join("characters", character_path, character_name, f"main.{extension}")
+
+
+def character_image_path(instance, filename):
+    """Upload path for extra character images"""
+    character_name = slugify(instance.character.name)
+    character_path = slugify(instance.path)
+    image_type = instance.type
+    extension = filename.split(".")[-1]
+    return os.path.join("characters", character_path, character_name, f"{image_type}.{extension}")
 
 
 class Character(Model):
@@ -31,20 +50,12 @@ class Character(Model):
     ]
 
     name = models.CharField(max_length=128)
-    image_url = models.URLField(max_length=2048, blank=True, null=True)
+    image = models.ImageField(
+        upload_to=character_main_image_path, blank=True, null=True
+    )
     type = models.CharField(max_length=24, choices=TYPES)
     path = models.CharField(max_length=24, choices=PATHS)
     rarity = models.PositiveSmallIntegerField(choices=RARITIES)
-    # lightcone = models.ForeignKey(
-    #     "lightcones.Lightcone",
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     blank=True,
-    #     related_name="characters",
-    # )
-    # relics = models.ManyToManyField(
-    #     "relics.Relic", related_name="characters", blank=True
-    # )
 
     def __str__(self):
         return self.name
@@ -62,3 +73,22 @@ class Character(Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class CharacterImage(Model):
+    IMAGE_TYPES = [
+        ("full_cg", "Full CG"),
+        ("headshot", "Headshot"),
+        ("chibi", "Chibi"),
+        ("icon", "Icon"),
+        ("extra", "Extra"),
+    ]
+
+    character = models.ForeignKey(
+        Character, on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField(upload_to=character_image_path)
+    type = models.CharField(max_length=16, choices=IMAGE_TYPES, default="extra")
+
+    def __str__(self):
+        return f"{self.character.name} - {self.get_type_display()} Image"
