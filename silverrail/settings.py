@@ -184,23 +184,23 @@ STORAGES = {
     },
 }
 
-AWS_STORAGE_BUCKET_NAME = 'silverrail'
-AWS_S3_REGION_NAME = 'us-east-1'
+AWS_STORAGE_BUCKET_NAME = "silverrail"
+AWS_S3_REGION_NAME = "us-east-1"
 if DEBUG is True:
-    MINIO_SCHEME = os.getenv('MINIO_SCHEME', 'http')
-    MINIO_PORT = os.getenv('MINIO_PORT', 9000)
-    MINIO_SERVER = os.getenv('MINIO_SERVER', 'localhost')
-    AWS_S3_ENDPOINT_URL = f'{MINIO_SCHEME}://{MINIO_SERVER}:{MINIO_PORT}'
-    AWS_ACCESS_KEY_ID = os.getenv('MINIO_ACCESS_KEY_ID', 'admin')
-    AWS_SECRET_ACCESS_KEY = os.getenv('MINIO_SECRET_ACCESS_KEY', 'admin123')
+    MINIO_SCHEME = os.getenv("MINIO_SCHEME", "http")
+    MINIO_PORT = os.getenv("MINIO_PORT", 9000)
+    MINIO_SERVER = os.getenv("MINIO_SERVER", "localhost")
+    AWS_S3_ENDPOINT_URL = f"{MINIO_SCHEME}://{MINIO_SERVER}:{MINIO_PORT}"
+    AWS_ACCESS_KEY_ID = os.getenv("MINIO_ACCESS_KEY_ID", "admin")
+    AWS_SECRET_ACCESS_KEY = os.getenv("MINIO_SECRET_ACCESS_KEY", "admin123")
     AWS_S3_FILE_OVERWRITE = False
-    AWS_DEFAULT_ACL = 'public-read'
+    AWS_DEFAULT_ACL = "public-read"
     AWS_QUERYSTRING_AUTH = False
     AWS_S3_USE_SSL = False
     AWS_S3_VERIFY = False
-    AWS_S3_ADDRESSING_STYLE = 'path'
+    AWS_S3_ADDRESSING_STYLE = "path"
 else:
     # Production S3 settings
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")

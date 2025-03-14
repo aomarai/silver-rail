@@ -5,6 +5,9 @@ from django.db.models import Model
 from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
 
+from utils.mixins import HashedFileModelMixin, TimeStampedModelMixin
+from utils.model_utils import register_file_cleanup_signals
+
 
 def ability_main_image_path(instance, filename):
     """Upload path for the main ability image (used in Ability model)"""
@@ -13,7 +16,11 @@ def ability_main_image_path(instance, filename):
     ability_type = slugify(instance.type)
     extension = filename.split(".")[-1]
     return os.path.join(
-        "characters", character_path, character_name, "abilities", f"{ability_type}.{extension}"
+        "characters",
+        character_path,
+        character_name,
+        "abilities",
+        f"{ability_type}.{extension}",
     )
 
 
@@ -32,7 +39,7 @@ def ability_image_path(instance, filename):
     )
 
 
-class Ability(Model):
+class Ability(HashedFileModelMixin, TimeStampedModelMixin, Model):
     ABILITY_TYPES = [
         ("basic", "Basic Attack"),
         ("skill", "Skill"),
@@ -57,6 +64,7 @@ class Ability(Model):
     image = models.ImageField(
         upload_to=ability_main_image_path, blank=True, null=True
     )  # Main ability image
+    image_hash = models.CharField(max_length=64, blank=True, null=True)  # Add this field
     type = models.CharField(max_length=16, choices=ABILITY_TYPES)
     energy_cost = models.IntegerField(null=True, blank=True)  # For ultimates
     skill_point_cost = models.SmallIntegerField(null=True, blank=True)  # For skills
@@ -78,10 +86,16 @@ class Ability(Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        if self.image:
+            self.image_hash = self.generate_file_hash("image")  # Add this line
         super().save(*args, **kwargs)
 
+    class Meta:
+        verbose_name = "Ability"
+        verbose_name_plural = "Abilities"
 
-class AbilityImage(Model):
+
+class AbilityImage(HashedFileModelMixin, TimeStampedModelMixin, Model):
     IMAGE_TYPES = [
         ("basic", "Basic Attack"),
         ("skill", "Skill"),
@@ -94,7 +108,21 @@ class AbilityImage(Model):
         Ability, on_delete=models.CASCADE, related_name="images"
     )
     image = models.ImageField(upload_to=ability_image_path)
+    image_hash = models.CharField(max_length=64, blank=True, null=True)  # Add this field
     type = models.CharField(max_length=16, choices=IMAGE_TYPES, default="basic")
 
     def __str__(self):
         return f"{self.ability.name} - {self.get_type_display()} Image"
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        if self.image:
+            self.image_hash = self.generate_file_hash("image")  # Add this line
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Ability Image"
+        verbose_name_plural = "Ability Images"
+
+register_file_cleanup_signals(Ability, ['image'])
+register_file_cleanup_signals(AbilityImage, ['image'])
