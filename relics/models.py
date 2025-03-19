@@ -5,6 +5,8 @@ from django.db.models import Model
 from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
 
+from utils.model_utils import register_file_cleanup_signals
+
 
 def relic_image_path(instance, filename):
     relic_set_name = slugify(instance.relic.set_name)
@@ -47,3 +49,5 @@ class Relic(Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+register_file_cleanup_signals(Relic, ["image"])

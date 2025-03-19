@@ -8,5 +8,4 @@ router.register(r"characters", views.CharacterViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("test-storage/", views.test_storage, name="test-storage"),
 ]
