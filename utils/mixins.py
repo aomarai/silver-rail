@@ -1,41 +1,39 @@
 import hashlib
-from django.db import models
 import logging
+from django.db import models
+from django.db.models.fields.files import FieldFile
 
 logger = logging.getLogger(__name__)
 
 
-class HashedFileModelMixin:
+class HashedFileModelMixin(models.Model):
     """
     Mixin that adds file hashing capabilities to models with file fields.
     Add this to any model with file or image fields that need content tracking.
     """
 
+    class Meta:
+        abstract = True
+
     def generate_file_hash(self, file_field_name):
         """
-        Generate a SHA-256 hash of the file content.
-
-        Args:
-            file_field_name (str): The name of the file field to hash.
-
-        Returns:
-            str: The SHA-256 hash of the file content.
+        Generate hash for a file field.
+        IMPORTANT: Only call this after the file has been saved to storage.
         """
         field = getattr(self, file_field_name, None)
         if not field:
             return None
 
         try:
-            field.open("rb")
+            field_file = getattr(self, file_field_name)
+            field_file.open("rb")
             file_hash = hashlib.sha256()
-            for chunk in iter(lambda: field.read(4096), b""):
+            for chunk in iter(lambda: field_file.read(4096), b""):
                 file_hash.update(chunk)
-            field.close()
+            field_file.close()
             return file_hash.hexdigest()
         except Exception as e:
-            logger.error(
-                f"Error generating hash for {file_field_name}: {e}"
-            )  # Corrected variable name
+            logger.error(f"Error generating hash for {file_field_name}: {e}")
             return None
 
     def update_file_hashes(self, commit=True):
@@ -44,15 +42,25 @@ class HashedFileModelMixin:
 
         for field in self._meta.get_fields():
             if isinstance(field, (models.FileField, models.ImageField)):
-                # Look for corresponding hash field
                 hash_field_name = f"{field.name}_hash"
                 if hasattr(self, hash_field_name):
-                    file_hash = self.generate_file_hash(field.name)
-                    setattr(self, hash_field_name, file_hash)
-                    changed = True
+                    field_value = getattr(self, field.name, None)
+                    if field_value:
+                        file_hash = self.generate_file_hash(field.name)
+                        setattr(self, hash_field_name, file_hash)
+                        changed = True
 
         if changed and commit:
-            self.save()
+            # Use update rather than save to avoid recursion
+            type(self).objects.filter(pk=self.pk).update(
+                **{
+                    hash_field_name: getattr(self, hash_field_name)
+                    for field in self._meta.get_fields()
+                    if isinstance(field, (models.FileField, models.ImageField))
+                    and hasattr(self, f"{field.name}_hash")
+                }
+            )
+
 
 class TimeStampedModelMixin(models.Model):
     """

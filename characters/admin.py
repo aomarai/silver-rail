@@ -1,6 +1,7 @@
 from django.contrib import admin
 from characters.models import Character
 from abilities.models import Ability
+from .models import Character, CharacterImage
 
 
 class AbilityInline(admin.TabularInline):
@@ -19,3 +20,6 @@ class CharacterAdmin(admin.ModelAdmin):
 
     def get_inlines(self, request, obj=None):
         return [AbilityInline]
+
+
+admin.site.register(CharacterImage)

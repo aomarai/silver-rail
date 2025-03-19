@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models import Model
 from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from utils.mixins import HashedFileModelMixin, TimeStampedModelMixin
 from utils.model_utils import register_file_cleanup_signals
@@ -29,7 +31,7 @@ def character_image_path(instance, filename):
     )
 
 
-class Character(HashedFileModelMixin, TimeStampedModelMixin, Model):
+class Character(TimeStampedModelMixin, Model):
     TYPES = [
         ("fire", "Fire"),
         ("ice", "Ice"),
@@ -60,7 +62,6 @@ class Character(HashedFileModelMixin, TimeStampedModelMixin, Model):
     image = models.ImageField(
         upload_to=character_main_image_path, blank=True, null=True
     )
-    image_hash = models.CharField(max_length=64, blank=True, null=True)
     type = models.CharField(max_length=24, choices=TYPES)
     path = models.CharField(max_length=24, choices=PATHS)
     rarity = models.PositiveSmallIntegerField(choices=RARITIES)
@@ -80,12 +81,25 @@ class Character(HashedFileModelMixin, TimeStampedModelMixin, Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        if self.image:
-            self.image_hash = self.generate_file_hash("image")
         super().save(*args, **kwargs)
 
 
-class CharacterImage(HashedFileModelMixin, TimeStampedModelMixin, Model):
+# Add a post_save signal to handle hashing after the file is saved
+# @receiver(post_save, sender=Character)
+# def update_character_hash(sender, instance, created, **kwargs):
+#     # Only generate hash if image exists and hash doesn't
+#     if instance.image and not instance.image_hash:
+#         try:
+#             # Generate hash
+#             hash_value = instance.generate_file_hash("image")
+#             # Update only the hash field to avoid recursion
+#             if hash_value:
+#                 type(instance).objects.filter(pk=instance.pk).update(image_hash=hash_value)
+#         except Exception as e:
+#             logger.error(f"Error updating hash for {instance}: {e}")
+
+
+class CharacterImage(TimeStampedModelMixin, Model):
     IMAGE_TYPES = [
         ("full_cg", "Full CG"),
         ("headshot", "Headshot"),
@@ -98,7 +112,6 @@ class CharacterImage(HashedFileModelMixin, TimeStampedModelMixin, Model):
         Character, on_delete=models.CASCADE, related_name="images"
     )
     image = models.ImageField(upload_to=character_image_path)
-    image_hash = models.CharField(max_length=64, blank=True, null=True)
     type = models.CharField(max_length=16, choices=IMAGE_TYPES, default="extra")
 
     def __str__(self):
@@ -109,9 +122,23 @@ class CharacterImage(HashedFileModelMixin, TimeStampedModelMixin, Model):
         verbose_name_plural = "Character Images"
 
     def save(self, *args, **kwargs):
-        if self.image:
-            self.image_hash = self.generate_file_hash("image")
+        self.full_clean()
         super().save(*args, **kwargs)
 
-register_file_cleanup_signals(Character, ['image'])
-register_file_cleanup_signals(CharacterImage, ['image'])
+
+# Do the same for CharacterImage
+# @receiver(post_save, sender=CharacterImage)
+# def update_character_image_hash(sender, instance, created, **kwargs):
+#     if instance.image and not instance.image_hash:
+#         try:
+#             hash_value = instance.generate_file_hash("image")
+#             if hash_value:
+#                 type(instance).objects.filter(pk=instance.pk).update(
+#                     image_hash=hash_value
+#                 )
+#         except Exception as e:
+#             logger.error(f"Error updating hash for {instance}: {e}")
+
+
+register_file_cleanup_signals(Character, ["image"])
+register_file_cleanup_signals(CharacterImage, ["image"])
