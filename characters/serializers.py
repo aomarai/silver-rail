@@ -8,4 +8,4 @@ class CharacterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Character
-        fields = ["name", "image_url", "type", "path", "rarity", "abilities"]
+        fields = ["name", "image", "type", "path", "rarity", "abilities"]

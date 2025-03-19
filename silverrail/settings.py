@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
 
-from django.conf.global_settings import AUTH_USER_MODEL, PASSWORD_HASHERS
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-b#1kwe7p+o^365)t%l+xol%5*u_1b^w!dx--qnk=vcc2#$pt0r"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = []
 
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
+    "storages",
     "characters",
     "teams",
     "relics",
@@ -171,4 +174,33 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
-# TODO: Add s3 settings
+# Storage settings for files
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+    },
+}
+
+AWS_STORAGE_BUCKET_NAME = "silverrail"
+AWS_S3_REGION_NAME = "us-east-1"
+if DEBUG:
+    MINIO_SCHEME = os.getenv("MINIO_SCHEME", "http")
+    MINIO_PORT = os.getenv("MINIO_PORT", 9000)
+    MINIO_SERVER = os.getenv("MINIO_SERVER", "localhost")
+    AWS_S3_ENDPOINT_URL = f"{MINIO_SCHEME}://{MINIO_SERVER}:{MINIO_PORT}"
+    AWS_ACCESS_KEY_ID = os.getenv("MINIO_ACCESS_KEY_ID", "admin")
+    AWS_SECRET_ACCESS_KEY = os.getenv("MINIO_SECRET_ACCESS_KEY", "admin123")
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = "public-read"
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_USE_SSL = False
+    AWS_S3_VERIFY = False
+    AWS_S3_ADDRESSING_STYLE = "path"
+else:
+    # Production S3 settings
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
