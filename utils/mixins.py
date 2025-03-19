@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 class HashedFileModelMixin(models.Model):
     """
+    Not currently in use. Work in progress.
+
     Mixin that adds file hashing capabilities to models with file fields.
     Add this to any model with file or image fields that need content tracking.
     """

@@ -186,7 +186,7 @@ STORAGES = {
 
 AWS_STORAGE_BUCKET_NAME = "silverrail"
 AWS_S3_REGION_NAME = "us-east-1"
-if DEBUG is True:
+if DEBUG:
     MINIO_SCHEME = os.getenv("MINIO_SCHEME", "http")
     MINIO_PORT = os.getenv("MINIO_PORT", 9000)
     MINIO_SERVER = os.getenv("MINIO_SERVER", "localhost")
